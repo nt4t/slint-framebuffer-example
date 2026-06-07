@@ -61,11 +61,8 @@ fn main() -> Result<(), slint::PlatformError> {
 
     // Path of the current TTY. Used to switch the terminal to graphics mode
     // and back to text mode.
-    let tty_path = "/dev/tty1";
-    // Path to the framebuffer device. Normally this is fb0.
-    // I'm using a `fbtft` based display on the RaspberryPi, which shows up
-    // as fb1 (fb0 is raspi's builtin graphics card).
-    let fb_path = "/dev/fb1";
+    let tty_path = "/dev/tty0";
+    let fb_path = "/dev/fb0";
 
     // Switch back to text mode when terminating
     ctrlc::set_handler(move || {
