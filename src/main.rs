@@ -1,4 +1,5 @@
 use linuxfb::{Framebuffer, set_terminal_mode, TerminalMode};
+use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Duration;
 use slint::{
@@ -22,7 +23,7 @@ struct FramebufferPlatform {
     bpp: usize,
     width: usize,
     height: usize,
-    render_buffer: Vec<Rgb565Pixel>,
+    render_buffer: RefCell<Vec<Rgb565Pixel>>,
 }
 
 impl FramebufferPlatform {
@@ -56,12 +57,18 @@ impl Platform for FramebufferPlatform {
 
             self.window.draw_if_needed(|renderer| {
                 let mut frame = self.fb.map().unwrap();
-                renderer.render(&self.render_buffer, self.width);
+                {
+                    let mut buf = self.render_buffer.borrow_mut();
+                    buf.clear();
+                    buf.resize(self.width * self.height, Rgb565Pixel::default());
+                    renderer.render(&mut buf, self.width);
+                }
                 let fb_pixels = unsafe { frame.as_mut_ptr() as *mut u32 };
                 let fb_len = (self.width * self.height * self.bpp) / 4;
+                let buf = self.render_buffer.borrow();
                 unsafe {
-                    for i in 0..std::cmp::min(self.render_buffer.len(), fb_len) {
-                        let p = self.render_buffer[i].0;
+                    for i in 0..std::cmp::min(buf.len(), fb_len) {
+                        let p = buf[i].0;
                         let r = ((p & 0xF800) >> 8) as u8;
                         let g = ((p & 0x07E0) >> 3) as u8;
                         let b = ((p & 0x001F) << 3) as u8;
