@@ -7,7 +7,7 @@ use slint::{
         Platform,
         software_renderer::{
             MinimalSoftwareWindow,
-            Rgb565Pixel,
+            Rgb888a8Pixel,
             RepaintBufferType,
         },
     },
@@ -24,12 +24,13 @@ struct FramebufferPlatform {
 impl FramebufferPlatform {
     fn new(fb: Framebuffer) -> Self {
         let size = fb.get_size();
+        let stride = fb.get_stride() as usize;
         let window = MinimalSoftwareWindow::new(RepaintBufferType::ReusedBuffer);
         window.set_size(PhysicalSize::new(size.0, size.1));
         Self {
             window,
             fb,
-            stride: size.0 as usize,
+            stride,
         }
     }
 }
@@ -45,7 +46,7 @@ impl Platform for FramebufferPlatform {
 
             self.window.draw_if_needed(|renderer| {
                 let mut frame = self.fb.map().unwrap();
-                let (_, pixels, _) = unsafe { frame.align_to_mut::<Rgb565Pixel>() };
+                let (_, pixels, _) = unsafe { frame.align_to_mut::<Rgb888a8Pixel>() };
                 renderer.render(pixels, self.stride);
             });
 
