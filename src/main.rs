@@ -7,7 +7,7 @@ use slint::{
         Platform,
         software_renderer::{
             MinimalSoftwareWindow,
-            Rgb888a8Pixel,
+            Rgb565Pixel,
             RepaintBufferType,
         },
     },
@@ -19,18 +19,28 @@ struct FramebufferPlatform {
     window: Rc<MinimalSoftwareWindow>,
     fb: Framebuffer,
     stride: usize,
+    bpp: usize,
+    width: usize,
+    height: usize,
+    render_buffer: Vec<Rgb565Pixel>,
 }
 
 impl FramebufferPlatform {
     fn new(fb: Framebuffer) -> Self {
         let size = fb.get_size();
-        let stride = fb.get_stride() as usize;
+        let bpp = fb.get_bytes_per_pixel() as usize;
+        let width = size.0 as usize;
+        let stride = width * bpp;
         let window = MinimalSoftwareWindow::new(RepaintBufferType::ReusedBuffer);
         window.set_size(PhysicalSize::new(size.0, size.1));
         Self {
             window,
             fb,
             stride,
+            bpp,
+            width,
+            height: size.1 as usize,
+            render_buffer: vec![Rgb565Pixel::default(); width * size.1 as usize],
         }
     }
 }
@@ -46,8 +56,18 @@ impl Platform for FramebufferPlatform {
 
             self.window.draw_if_needed(|renderer| {
                 let mut frame = self.fb.map().unwrap();
-                let (_, pixels, _) = unsafe { frame.align_to_mut::<Rgb888a8Pixel>() };
-                renderer.render(pixels, self.stride);
+                renderer.render(&self.render_buffer, self.width);
+                let fb_pixels = unsafe { frame.as_mut_ptr() as *mut u32 };
+                let fb_len = (self.width * self.height * self.bpp) / 4;
+                unsafe {
+                    for i in 0..std::cmp::min(self.render_buffer.len(), fb_len) {
+                        let p = self.render_buffer[i].0;
+                        let r = ((p & 0xF800) >> 8) as u8;
+                        let g = ((p & 0x07E0) >> 3) as u8;
+                        let b = ((p & 0x001F) << 3) as u8;
+                        *fb_pixels.add(i) = (u32::from(r) << 16) | (u32::from(g) << 8) | u32::from(b);
+                    }
+                }
             });
 
             if !self.window.has_active_animations() {
