@@ -41,7 +41,7 @@ impl FramebufferPlatform {
             bpp,
             width,
             height: size.1 as usize,
-            render_buffer: vec![Rgb565Pixel::default(); width * size.1 as usize],
+            render_buffer: RefCell::new(vec![Rgb565Pixel::default(); width * size.1 as usize]),
         }
     }
 }
