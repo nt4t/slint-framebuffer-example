@@ -5,16 +5,18 @@ authors = ["Niklas Cathor <niklas.cathor@gmx.de>"]
 edition = "2021"
 build = "build.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 ctrlc = { version = "3.4.1", features = ["termination"] }
+evdev = { version = "0.12.0" }
 linuxfb = { git = "https://gitlab.com/nilclass/rust-linuxfb", branch = "kdsetmode" }
+evdev = { git = "https://github.com/emberian/evdev" }
 
 [dependencies.slint]
-version = "1.2"
+version = "1.16"
 default-features = false
-features = ["compat-1-2", "std", "software-renderer-systemfonts"]
+features = ["compat-1-2", "std", "renderer-software"]
 
 [build-dependencies]
-slint-build = "1.0"
+slint-build = "1.16"
+
+

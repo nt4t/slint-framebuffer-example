@@ -1,35 +1,50 @@
 # Slint framebuffer example
 
-⚠️⚠️⚠️
-
-This example is very rudimentary. It may not work with all framebuffer drivers (in fact, with most it won't, because it uses 16-bit pixels, assuming the driver will understand).
-Use at your own risk, and be ready to reboot if your screen is frozen 🙈
-
-⚠️⚠️⚠️
-
 ## What is this?
 
-This example contains a very simple slint [Platform](https://docs.rs/slint/latest/slint/platform/trait.Platform.html) implementation, that renders to a Linux framebuffer device.
+This example contains a very simple Slint [Platform](https://docs.rs/slint/latest/slint/platform/trait.Platform.html) implementation that renders to a Linux framebuffer device.
 
 Slint is a UI library written in Rust. Learn more about it at https://slint.dev
 
 The example uses single-buffered rendering (double-buffer would be supported by the framebuffer API, however it's not supported by all drivers - especially the `fbtft` driver [does not support it](https://github.com/notro/fbtft/issues/401)).
 
+## Features
+
+- **32-bit framebuffer support**: Automatically detects and handles both 16-bit (RGB565) and 32-bit (RGB888/RGBA) framebuffers
+- **Keyboard input**: Reads events from `/dev/input/event0` for keyboard navigation
+- **Cross-compilation**: Supports building for ARMv7 32-bit targets
+
+## Keyboard Controls
+
+Keyboard input is read from `/dev/input/event0`. The following keys are supported:
+
+| Action | Key Codes |
+|--------|-----------|
+| Up | 103 (Arrow Up), 25 (W), 17 |
+| Down | 108 (Arrow Down), 16 (S), 31 |
+| Select | 28 (Enter) |
+
+To find the key codes for your keyboard, run the application and check the debug output:
+```
+KEY: code=<N> value=1
+```
+
 ## How to use
 
-1. Open `main.rs` and make sure the `tty_path` and `fb_path` values match your system.
+1. Open `main.rs` and make sure the `tty_path`, `fb_path`, and keyboard device path match your system.
 2. Compile & run, with `cargo run`
 
-Note that touch input is not implemented.
+## Cross-Compiling for ARMv7
+
+See [doc/cross-compile-guide.md](doc/cross-compile-guide.md) for detailed instructions on cross-compiling for ARMv7 32-bit Linux targets.
 
 ## Why?
 
-I wanted to see how adding a custom platform implementation works (the process went very smooth, thanks to [excellent upstream documentation](https://docs.rs/slint/latest/slint/docs/mcu/index.html))
+I wanted to see how adding a custom platform implementation works (the process went very smoothly, thanks to [excellent upstream documentation](https://docs.rs/slint/latest/slint/docs/mcu/index.html))
 
-## Does it work?
+## Tested Hardware
 
-Maybe.
+Tested on Raspberry Pi 2W with [fbcp-ili9341](https://github.com/juj/fbcp-ili9341) and SPI ST7789 TFT display.
+OS: Raspbian 1:6.12.75-1+rpt1~bookworm (2026-03-11) armv7l GNU/Linux
 
-Below is a picture of how it looks on a 4-inch waveshare display, on the RaspberryPi. Note that this display is connected via SPI and controlled via the `fbtft` driver. It's not using the RaspberryPi's builtin graphics hardware. If you have a proper display, connected via HDMI or the built-in display connector, using a wayland compositor or X server, as well as an accelerated renderer would be the better choice imho.
-
-![](picture.jpg)
+![](st7789.jpg)

@@ -1,17 +1,50 @@
-import { Button, VerticalBox } from "std-widgets.slint";
+import { VerticalBox } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
-    in-out property<int> counter: 42;
-    callback request-increase-value();
+    background: #1a1a1a;
+    in-out property<int> selected-index: 0;
+    
+    callback item-selected(int);
+    
     VerticalBox {
+        spacing: 0;
+        
         Text {
-            text: "Counter: \{root.counter}";
+            text: "🚀 Main Menu";
+            font-size: 20pt;
+            color: #ff0f0f;
         }
-        Button {
-            text: "Increase value";
-            clicked => {
-                root.request-increase-value();
-            }
+        
+        Text {
+            text: "Item One";
+            color: (root.selected-index == 0) ? #00ff00 : #ffffff;
+        }
+        Text {
+            text: "Item Two";
+            color: (root.selected-index == 1) ? #00ff00 : #ffffff;
+        }
+        Text {
+            text: "Item Three";
+            color: (root.selected-index == 2) ? #00ff00 : #ffffff;
+        }
+        Text {
+            text: "Item Четыре";
+            color: (root.selected-index == 3) ? #00ff00 : #ffffff;
+        }
+        Text {
+            text: "Item 五";
+            color: (root.selected-index == 4) ? #00ff00 : #ffffff;
+        }
+        
+        Text {
+            text: "W: Up | S: Down | Enter: Select";
+            font-size: 10pt;
+            color: #666666;
+        }
+        
+        Text {
+            text: "Selected: " + (root.selected-index == 0 ? "Item One" : root.selected-index == 1 ? "Item Two" : root.selected-index == 2 ? "Item Three" : root.selected-index == 3 ? "Item Четыре" : "Item 五");
+            color: #00ff00;
         }
     }
 }
